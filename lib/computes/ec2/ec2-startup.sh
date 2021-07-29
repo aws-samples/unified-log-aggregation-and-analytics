@@ -42,6 +42,10 @@ cat << 'EOF' > /etc/aws-kinesis/agent.json
         {
             "filePattern": "/etc/httpd/logs/access_log*",
             "deliveryStream": "ec2-logs-delivery-stream"
+        },
+        {
+            "filePattern": "/etc/httpd/logs/error_log*",
+            "deliveryStream": "ec2-logs-delivery-stream"
         }
     ]
 }

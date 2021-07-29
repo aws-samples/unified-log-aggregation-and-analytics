@@ -40,9 +40,23 @@ Let's see in detail how the solution is implemented on each of these compute pla
 
 ![ec2](images/ec2.svg)
 
-CDK script provided part of this article deploys a simple PHP application that generates logs under `/etc/httpd/logs` directory inside the EC2 instance. The Kinesis agent is configured via `/etc/aws-kinesis/agent.json` to watch the `access_logs` and stream them periodically to Kinesis Data Firehose (`ec2-logs-delivery-stream`).
+CDK script provided part of this article deploys a simple PHP application that generates logs under `/etc/httpd/logs` directory inside the EC2 instance. The Kinesis agent is configured via `/etc/aws-kinesis/agent.json` to watch both `access_logs` and `error_logs`, stream them periodically to Kinesis Data Firehose (`ec2-logs-delivery-stream`).
 
-Since Elastic search expects data in JSON format, we introduce a firehose data transformer (Lambda function) that converts the log data to JSON format before writing it to Elastic search.
+Since Elastic search expects data in JSON format, we introduce a firehose data transformer (Lambda function) that converts the log data to JSON format before writing it to Elastic search. Here is a sample input and output for the data transformer:
+
+**Input:**
+
+```bash
+46.99.153.40 - - [29/Jul/2021:15:32:33 +0000] "GET / HTTP/1.1" 200 173 "-" "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36"
+```
+
+```json
+{
+    "logs" : "46.99.153.40 - - [29/Jul/2021:15:32:33 +0000] \"GET / HTTP/1.1\" 200 173 \"-\" \"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36\"",
+}
+```
+
+> Notes: Lambda function can be enhanced to extract out timestamp, HTTP, browser information from the log data and store them as seperate attributes in the JSON document.
 
 ### Amazon ECS
 
@@ -73,6 +87,84 @@ Once deployed the overall flow looks like below:
 * The extension also takes care of buffering the recieved log events in a synchronized queue and writing it to AWS Kinesis Firehose via direct PUT records.
 
 > Note: Firehose stream name gets specified as an environment variable (AWS_KINESIS_STREAM_NAME).
+
+Since we are interested in only capturing the execution logs of the lambda function, the data transformer will filter out the logs of type `function` before saving it to Elasticsearch.
+
+Here is a sample input and output for the data transformer:
+
+**Input**
+
+```json
+[
+   {
+      "time":"2021-07-29T19:54:08.949Z",
+      "type":"platform.start",
+      "record":{
+         "requestId":"024ae572-72c7-44e0-90f5-3f002a1df3f2",
+         "version":"$LATEST"
+      }
+   },
+   {
+      "time":"2021-07-29T19:54:09.094Z",
+      "type":"platform.logsSubscription",
+      "record":{
+         "name":"kinesisfirehose-logs-extension-demo",
+         "state":"Subscribed",
+         "types":[
+            "platform",
+            "function"
+         ]
+      }
+   },
+   {
+      "time":"2021-07-29T19:54:09.096Z",
+      "type":"function",
+      "record":"2021-07-29T19:54:09.094Z\tundefined\tINFO\tLoading function\n"
+   },
+   {
+      "time":"2021-07-29T19:54:09.096Z",
+      "type":"platform.extension",
+      "record":{
+         "name":"kinesisfirehose-logs-extension-demo",
+         "state":"Ready",
+         "events":[
+            "INVOKE",
+            "SHUTDOWN"
+         ]
+      }
+   },
+   {
+      "time":"2021-07-29T19:54:09.097Z",
+      "type":"function",
+      "record":"2021-07-29T19:54:09.097Z\t024ae572-72c7-44e0-90f5-3f002a1df3f2\tINFO\tvalue1 = value1\n"
+   },   
+   {
+      "time":"2021-07-29T19:54:09.098Z",
+      "type":"platform.runtimeDone",
+      "record":{
+         "requestId":"024ae572-72c7-44e0-90f5-3f002a1df3f2",
+         "status":"success"
+      }
+   }
+]
+```
+
+**Output**
+
+```json
+{
+   "logEvent_1":{
+      "time":"2021-07-29T19:54:09.096Z",
+      "type":"function",
+      "record":"2021-07-29T19:54:09.094Z\tundefined\tINFO\tLoading function\n"
+   },
+   "logEvent_2":{
+      "time":"2021-07-29T19:54:09.097Z",
+      "type":"function",
+      "record":"2021-07-29T19:54:09.097Z\t024ae572-72c7-44e0-90f5-3f002a1df3f2\tINFO\tvalue1 = value1\n"
+   },   
+}
+```
 
 ## Build and Deployment
 
