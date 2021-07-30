@@ -305,6 +305,8 @@ Run the following command from the root directory to delete the stack:
 cdk destroy
 ```
 
+> Note: The stack will be deleted after the command is executed.
+
 ## Conclusion
 
 We have shown how we unify and centralize logs across different compute platforms using Kinesis data firehose and ElasticSearch. This approach allows customers to analyze logs quicker and understand the root cause of failures, all using a single platform rather than using different platforms for different services.
