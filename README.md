@@ -192,9 +192,7 @@ yarn install && npm run build
 
 ### Deployment
 
-In order to deploy the application, first bootstrap a CDK environment (if you haven't done so already).
-
-* Bootstrap CDK (**ONLY ONCE**, if you have already done this you can skip this part)
+* In order to deploy the application, first bootstrap a CDK environment (if you haven't done so already). Bootstrap CDK (**ONLY ONCE**, if you have already done this you can skip this part)
 
 ```bash
 cdk bootstrap \
