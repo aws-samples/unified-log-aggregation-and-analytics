@@ -200,7 +200,7 @@ cdk bootstrap \
     aws://<AWS Account Id>/<AWS_REGION>
 ```
 
-> Note: Subsitute your AWS Account Id and AWS region in the command below.
+> Note: Subsitute your AWS Account Id and AWS region in the command above.
 
 * Run the following command to deploy the code:
 
