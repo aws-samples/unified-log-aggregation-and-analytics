@@ -282,7 +282,7 @@ curl http://ec2ipaddress:80
 * **AWS ECS**  - Run the following command couple of times to generate logs:
 
 ```bash
-http://ecsloadbalancerurl:80
+curl http://ecsloadbalancerurl:80
 ```
 
 >Note: Make sure to replace `ecsloadbalancerurl` with the public ARN of the AWS Application Load Balancer
