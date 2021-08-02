@@ -192,6 +192,18 @@ yarn install && npm run build
 
 ### Deployment
 
+In order to deploy the application, first bootstrap a CDK environment (if you haven't done so already).
+
+* Bootstrap CDK (**ONLY ONCE**, if you have already done this you can skip this part)
+
+```bash
+cdk bootstrap \
+    --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess \
+    aws://<AWS Account Id>/<AWS_REGION>
+```
+
+> Note: Subsitute your AWS Account Id and AWS region in the command below.
+
 * Run the following command to deploy the code:
 
 ```bash
