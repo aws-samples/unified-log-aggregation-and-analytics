@@ -11,7 +11,7 @@ Having a unified aggregation system provides the following benefits:
 * It provides a single point of access to all the logs across different compute platforms.
 * Helps to define and standardize the transformations before the log gets delivered to downstream systems like S3, elastic search, redshift, etc
 * It provides a secure storage area for log data, before it gets written out to the disk. In the event of machine/application failure, we still have access to the logs emitted from the source machine/application
-* The solution proposed in this article using Kibana to visualize the logs in order to support a single unified system to view and access all the logs.
+* The solution proposed in this article using Kibana to visualize the logs to support a single unified system to view and access all the logs.
 
 ## Services Overview
 
@@ -30,13 +30,13 @@ Here is the architecture of the solution proposed in this article:
 
 ![architecture](images/arch.svg)
 
-The above architecture uses various log aggregation tools (like log agents, log routers, and lambda extensions) to collect logs from various compute platforms and deliver them to the Kinesis Data Firehose. The Kinesis Data Firehose streams the logs to Elasticsearch. In order to scale this architecture better each of these compute platforms will stream the logs to a different Kinesis Data Firehose stream which  will get added to a separate elastic search index, rotated every 24 hours.
+The above architecture uses various log aggregation tools (like log agents, log routers, and lambda extensions) to collect logs from various compute platforms and deliver them to the Kinesis Data Firehose. The Kinesis Data Firehose streams the logs to Elasticsearch. To scale this architecture better each of these compute platforms will stream the logs to a different Kinesis Data Firehose stream which  will get added to a separate elastic search index, rotated every 24 hours.
 
 Let's see in detail how the solution is implemented on each of these compute platforms.
 
 ### Amazon EC2
 
-`Amazon Kinesis Agent` is used in order to collect and stream logs to kinesis data firehose from EC2 instances. Amazon Kinesis agent is a standalone Java software application that offers an easy way to collect and send data to Kinesis Data Firehose. The agent continuously monitors a set of files and sends new data to your Kinesis Data Firehose delivery stream.
+`Amazon Kinesis Agent` is used to collect and stream logs to kinesis data firehose from EC2 instances. Amazon Kinesis agent is a standalone Java software application that offers an easy way to collect and send data to Kinesis Data Firehose. The agent continuously monitors a set of files and sends new data to your Kinesis Data Firehose delivery stream.
 
 ![ec2](images/ec2.svg)
 
@@ -245,7 +245,7 @@ Here are few key info about the built stack:
 
 ### Generating logs
 
-In order to visualize the logs, we need to generate some sample logs. Here is how we can generate them for each of the services:
+To visualize the logs, we need to generate some sample logs. Here is how we can generate them for each of the services:
 
 * **AWS Lambda** - Run the following command couple of times to generate logs:
 
