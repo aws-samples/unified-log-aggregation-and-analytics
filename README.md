@@ -192,7 +192,7 @@ yarn install && npm run build
 
 ### Deployment
 
-* In order to deploy the application, first bootstrap a CDK environment (if you haven't done so already). Bootstrap CDK (**ONLY ONCE**, if you have already done this you can skip this part)
+* If you are running CDK for the first time, run the following command to bootstrap the CDK environment.
 
 ```bash
 cdk bootstrap \
@@ -200,7 +200,7 @@ cdk bootstrap \
     aws://<AWS Account Id>/<AWS_REGION>
 ```
 
-> Note: Subsitute your AWS Account Id and AWS region in the command above.
+> Note: Replace your AWS Account Id and AWS region in the command above. Bootstrap CDK (**ONLY ONCE**, if you have already done this you can skip this part)
 
 * Run the following command to deploy the code:
 
