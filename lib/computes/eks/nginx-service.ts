@@ -1,5 +1,6 @@
 import * as cdk8s from 'cdk8s';
 import * as kplus from 'cdk8s-plus-17';
+import { Probe } from 'cdk8s-plus-17';
 import * as constructs from 'constructs';
 import { KubeNamespace, KubeServiceAccount } from './imports/k8s';
 
@@ -45,14 +46,18 @@ export class NginxService extends cdk8s.Chart {
           imagePullPolicy: kplus.ImagePullPolicy.ALWAYS,
           name: 'nginx',
           port: 80,
-        },
-      ],
+          liveness: Probe.fromHttpGet('/', {          
+            port: 80
+          }),
+        },        
+      ],      
       metadata: {
         name: 'api-deployment',
         namespace: namespace.name,
-      },
+      },      
       serviceAccount,
     });
+    
     deployment.podMetadata.addLabel('app', 'nginx');
     deployment.selectByLabel('app', 'nginx');
 
@@ -78,6 +83,7 @@ export class NginxService extends cdk8s.Chart {
         name: props.ingressName,
         namespace: namespace.name,
         annotations: {
+          'alb.ingress.kubernetes.io/healthcheck-path': '/',
           'kubernetes.io/ingress.class': 'alb',
           'alb.ingress.kubernetes.io/scheme': 'internal',
           'alb.ingress.kubernetes.io/target-type': 'ip',

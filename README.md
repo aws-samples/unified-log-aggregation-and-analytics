@@ -259,7 +259,7 @@ aws lambda invoke \
     --log-type Tail
 ```
 
->Note: Make sure to replace `samplelambdafunction` with the actual lambda function name
+>Note: Make sure to replace `samplelambdafunction` with the actual lambda function name. Filepath needs to be updated based on the underlaying operating system.
 
 The function should return ```"StatusCode": 200```, with the below output
 
