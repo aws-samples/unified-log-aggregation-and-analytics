@@ -184,7 +184,16 @@ mkdir unified-logs && cd unified-logs
 git clone https://github.com/hariohmprasath/unified-log-aggregation-and-analytics.git .
 ```
 
-* Build the code by running the following command:
+* Build the lambda extension by running the following command:
+
+```bash
+cd lib/computes/lambda/extensions/extensions
+chmod +x extension.sh
+./extension.sh
+cd ../../../../../
+```
+
+* Build the CDK code by running the following command:
 
 ```bash
 yarn install && npm run build
