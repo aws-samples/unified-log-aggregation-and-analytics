@@ -181,7 +181,7 @@ Here is a sample input and output for the data transformer:
 
 ```bash
 mkdir unified-logs && cd unified-logs
-git clone https://github.com/hariohmprasath/unified-log-aggregation-and-analytics.git .
+git clone https://github.com/aws-samples/unified-log-aggregation-and-analytics.git .
 ```
 
 * Build the lambda extension by running the following command:
