@@ -1,4 +1,4 @@
-# Unified Log Aggregation and Analytics across compute platforms
+# Unified log aggregation and analytics across compute platforms
 
 ## Introduction
 
