@@ -28,11 +28,11 @@ export class AwsLoadBalancerController extends cdk.Construct {
       },
     );
 
-    awsLbControllerServiceAccount.addToPolicy(new iam.PolicyStatement({
+    awsLbControllerServiceAccount.addToPrincipalPolicy(new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
       actions: [
         'iam:CreateServiceLinkedRole',
-        'ec2:*',        
+        'ec2:*',
         'elasticloadbalancing:DescribeLoadBalancers',
         'elasticloadbalancing:DescribeLoadBalancerAttributes',
         'elasticloadbalancing:DescribeListeners',
@@ -47,7 +47,7 @@ export class AwsLoadBalancerController extends cdk.Construct {
       resources: ['*'],
     }));
 
-    awsLbControllerServiceAccount.addToPolicy(new iam.PolicyStatement({
+    awsLbControllerServiceAccount.addToPrincipalPolicy(new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
       actions: [
         'cognito-idp:DescribeUserPoolClient',
@@ -69,9 +69,9 @@ export class AwsLoadBalancerController extends cdk.Construct {
         'shield:DeleteProtection',
       ],
       resources: ['*'],
-    }));      
+    }));
 
-    awsLbControllerServiceAccount.addToPolicy(new iam.PolicyStatement({
+    awsLbControllerServiceAccount.addToPrincipalPolicy(new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
       actions: [
         'elasticloadbalancing:CreateLoadBalancer',
@@ -85,7 +85,7 @@ export class AwsLoadBalancerController extends cdk.Construct {
       },
     }));
 
-    awsLbControllerServiceAccount.addToPolicy(new iam.PolicyStatement({
+    awsLbControllerServiceAccount.addToPrincipalPolicy(new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
       actions: [
         'elasticloadbalancing:CreateListener',
@@ -96,7 +96,7 @@ export class AwsLoadBalancerController extends cdk.Construct {
       resources: ['*'],
     }));
 
-    awsLbControllerServiceAccount.addToPolicy(new iam.PolicyStatement({
+    awsLbControllerServiceAccount.addToPrincipalPolicy(new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
       actions: [
         'elasticloadbalancing:AddTags',
@@ -113,7 +113,7 @@ export class AwsLoadBalancerController extends cdk.Construct {
       },
     }));
 
-    awsLbControllerServiceAccount.addToPolicy(new iam.PolicyStatement({
+    awsLbControllerServiceAccount.addToPrincipalPolicy(new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
       actions: [
         'elasticloadbalancing:AddTags',
@@ -127,7 +127,7 @@ export class AwsLoadBalancerController extends cdk.Construct {
       ]
     }));
 
-    awsLbControllerServiceAccount.addToPolicy(new iam.PolicyStatement({
+    awsLbControllerServiceAccount.addToPrincipalPolicy(new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
       actions: [
         'elasticloadbalancing:ModifyLoadBalancerAttributes',
@@ -136,7 +136,7 @@ export class AwsLoadBalancerController extends cdk.Construct {
         'elasticloadbalancing:SetSubnets',
         'elasticloadbalancing:DeleteLoadBalancer',
         'elasticloadbalancing:ModifyTargetGroup',
-        'elasticloadbalancing:ModifyTargetGroupAttributes',        
+        'elasticloadbalancing:ModifyTargetGroupAttributes',
         'elasticloadbalancing:DeleteTargetGroup',
       ],
       resources: ['*'],
@@ -147,7 +147,7 @@ export class AwsLoadBalancerController extends cdk.Construct {
       },
     }));
 
-    awsLbControllerServiceAccount.addToPolicy(new iam.PolicyStatement({
+    awsLbControllerServiceAccount.addToPrincipalPolicy(new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
       actions: [
         'elasticloadbalancing:RegisterTargets',
@@ -156,7 +156,7 @@ export class AwsLoadBalancerController extends cdk.Construct {
       resources: ['arn:aws:elasticloadbalancing:*:*:targetgroup/*/*']
     }));
 
-    awsLbControllerServiceAccount.addToPolicy(new iam.PolicyStatement({
+    awsLbControllerServiceAccount.addToPrincipalPolicy(new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
       actions: [
         'elasticloadbalancing:SetWebAcl',
@@ -168,7 +168,7 @@ export class AwsLoadBalancerController extends cdk.Construct {
       resources: ['*'],
     }));
 
-    awsLbControllerServiceAccount.addToPolicy(new iam.PolicyStatement({
+    awsLbControllerServiceAccount.addToPrincipalPolicy(new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
       actions: [
         'acm:DescribeCertificate',
@@ -176,7 +176,7 @@ export class AwsLoadBalancerController extends cdk.Construct {
         'acm:GetCertificate',
       ],
       resources: ['*'],
-    }));        
+    }));
 
     // Deploy AWS LoadBalancer Controller from the Helm chart
     const stack = cdk.Stack.of(this);

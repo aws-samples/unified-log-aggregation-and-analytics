@@ -1,6 +1,6 @@
 import * as cdk from '@aws-cdk/core';
 import * as ec2 from '@aws-cdk/aws-ec2';
-import * as es from '@aws-cdk/aws-elasticsearch';
+import * as opensearch from '@aws-cdk/aws-opensearchservice';
 import * as s3 from '@aws-cdk/aws-s3';
 import { Ec2Logger } from './computes/ec2';
 import { ECSLogger } from './computes/ecs';
@@ -11,14 +11,14 @@ import { EksDeployment } from './computes/eks/eks-deployments';
 export interface LoggingProp extends cdk.NestedStackProps {
   // VPC
   readonly vpc: ec2.IVpc;
-  // Elasticsearch Domain
-  readonly es: es.Domain;
+  // OpenSearch Domain
+  readonly os: opensearch.Domain;
   // Stack
   readonly stack: cdk.Construct;
   // S3 Bucket to save failed records
   readonly failureBucket: s3.Bucket;
   // Region
-  readonly region: string;  
+  readonly region: string;
 }
 
 export class CdkUnifiedLogsStack extends cdk.Stack {
@@ -28,9 +28,9 @@ export class CdkUnifiedLogsStack extends cdk.Stack {
     // VPC
     const vpc = new ec2.Vpc(this, 'unified-logs-vpc', { natGateways: 1 });
 
-    // Elastic search
-    const esDomain = new es.Domain(this, 'elasticsearch', {
-      version: es.ElasticsearchVersion.V7_9,
+    // OpenSearch
+    const osDomain = new opensearch.Domain(this, 'opensearch', {
+      version: opensearch.EngineVersion.OPENSEARCH_1_0,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
@@ -42,11 +42,11 @@ export class CdkUnifiedLogsStack extends cdk.Stack {
 
     const loggingProp = {
       vpc: vpc,
-      es: esDomain,
+      os: osDomain,
       stack: this,
-      failureBucket: rawDataBucket,      
+      failureBucket: rawDataBucket,
       region: cdk.Stack.of(this).region
-    };    
+    };
 
     // Setup EKS infrastructure
     const eksLogger = new EksLogger(this, 'eks-stack', loggingProp);
@@ -68,10 +68,10 @@ export class CdkUnifiedLogsStack extends cdk.Stack {
     const eksDeployment = new EksDeployment(this, 'eks-deployment', eksLogger.cluster, eksLogger.iamRoleForK8sSa);
     eksDeployment.addDependency(ecsLogger);
 
-    // ES Domain output
-    new cdk.CfnOutput(this, 'elastic-domain-arn', {
-      exportName: 'Elastic-Search-Domain',
-      value: esDomain.domainArn,
+    // OpenSearch Domain output
+    new cdk.CfnOutput(this, 'opensearch-domain-arn', {
+      exportName: 'OpenSearch-Domain',
+      value: osDomain.domainArn,
     });
 
     // S3 Bucket name output

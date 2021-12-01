@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 yum update -y
 yum install -y httpd php
 yum install -y aws-kinesis-agent
@@ -38,8 +38,9 @@ EOF
 # Start kinesis firehose agent
 cat << 'EOF' > /etc/aws-kinesis/agent.json
 {
-    "cloudwatch.emitMetrics": true,    
-    "flows": [    
+    "cloudwatch.emitMetrics": true,
+    "firehose.endpoint": "firehose.us-east-1.amazonaws.com"
+    "flows": [
         {
             "filePattern": "/etc/httpd/logs/access_log*",
             "deliveryStream": "ec2-logs-delivery-stream"
@@ -52,5 +53,5 @@ cat << 'EOF' > /etc/aws-kinesis/agent.json
 }
 EOF
 ​
-service aws-kinesis-agent start
+service aws-kinesis-agent  start
 chkconfig aws-kinesis-agent on

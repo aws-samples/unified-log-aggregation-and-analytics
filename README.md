@@ -2,47 +2,44 @@
 
 ## Introduction
 
-The proposed solution shows and approach to unify and centralize logs across different compute platforms like EC2, ECS, EKS and Lambda with Kinesis Data Firehose using log collection agents (EC2 Kinesis agent), log routers (Fluentbit and Firelens) and lambda extension. We can easily deploy the solution presented here on the customer site using the CDK scripts packaged part of this article. Amazon managed Elastic search with Kibana is used to visualize the logs collected across different applications running on different compute platforms.
+Our customers want to make sure their users have the best experience running their application on AWS. To make this happen, you need to monitor and fix software problems as quickly as possible. Doing this gets challenging with the growing volume of data needing to be quickly detected, analyzed, and stored. In this post, we walk you through an automated process to aggregate and monitor logging-application data in near-real time, so you can remediate application issues faster.
 
-## Need for unified aggregation system
+This post shows how to unify and centralize logs across different computing platforms. With this solution, you can unify logs from [Amazon Elastic Compute Cloud](https://aws.amazon.com/ec2/) (Amazon EC2), [Amazon Elastic Container Service](https://aws.amazon.com/ecs/) (Amazon ECS), [Amazon Elastic Kubernetes Service](https://aws.amazon.com/eks/) (Amazon EKS), [Amazon Kinesis Data Firehose](https://aws.amazon.com/kinesis/data-firehose/), and [AWS Lambda](https://aws.amazon.com/lambda/) using agents, log routers, and extensions. We use [Amazon OpenSearch Service](https://aws.amazon.com/opensearch-service/) (successor to Amazon Elasticsearch Service) with OpenSearch Dashboards to visualize and analyze the logs, collected across different computing platforms to get application insights. You can deploy the solution using the [AWS Cloud Development Kit](https://aws.amazon.com/cdk/) (AWS CDK) scripts provided as part of the solution.
 
-Having a unified aggregation system provides the following benefits:
+## Customer benefits
+A unified aggregated log system provides the following benefits:
+* A single point of access to all the logs across different computing platforms
+* Help defining and standardizing the transformations of logs before they get delivered to downstream systems like [Amazon Simple Storage Service](http://aws.amazon.com/s3) (Amazon S3), Amazon OpenSearch Service, [Amazon Redshift](https://aws.amazon.com/redshift), and other services
+* The ability to use Amazon OpenSearch Service to quickly index, and OpenSearch Dashboards to search and visualize logs from its routers, applications, and other devices
 
-* It provides a single point of access to all the logs across different compute platforms.
-* Helps to define and standardize the transformations before the log gets delivered to downstream systems like S3, elastic search, redshift, etc
-* It provides a secure storage area for log data, before it gets written out to the disk. In the event of machine/application failure, we still have access to the logs emitted from the source machine/application
-* The solution proposed in this article using Kibana to visualize the logs to support a single unified system to view and access all the logs.
 
-## Services Overview
+## Solution overview
 
-Here is a high level overview of different AWS services used in the solution:
+In this post, we use the following services to demonstrate log aggregation across different compute platforms:
+* **Amazon EC2** – A web service that provides secure, resizable compute capacity in the cloud. It’s designed to make web-scale cloud computing easier for developers.
+* **Amazon ECS** – A web service that makes it easy to run, scale, and manage Docker containers on AWS, designed to make the Docker experience easier for developers.
+* **Amazon EKS** – A web service that makes it easy to run, scale, and manage Docker containers on AWS.
+* **Kinesis Data Firehose** – A fully managed service that makes it easy to stream data to Amazon S3, Amazon Redshift, or Amazon OpenSearch Service.
+* **Lambda** – A compute service that lets you run code without provisioning or managing servers. It’s designed to make web-scale cloud computing easier for developers.
+* **Amazon OpenSearch Service** – A fully managed service that makes it easy for you to perform interactive log analytics, real-time application monitoring, website search, and more.
 
-* **Amazon EC2**: Amazon Elastic Compute Cloud (Amazon EC2) is a web service that provides secure, resizable compute capacity in the cloud. It is designed to make web-scale cloud computing easier for developers, read more about it [here](https://aws.amazon.com/ec2/).
-* **Amazon ECS**: Amazon Elastic Container Service (Amazon ECS) is a web service that makes it easy to run, scale, and manage Docker containers on AWS. It is designed to make the Docker experience easier for developers, read more about it [here](https://aws.amazon.com/ecs/).
-* **Amazon EKS**: Amazon Elastic Container Service for Kubernetes (Amazon EKS) is a web service that makes it easy to run, scale, and manage Docker containers on AWS. It is designed to make the Docker experience easier for developers, read more about it [here](https://aws.amazon.com/eks/).
-* **Amazon Lambda**: Amazon Lambda is a compute service that lets you run code without provisioning or managing servers. It is designed to make web-scale cloud computing easier for developers, read more about it [here](https://aws.amazon.com/lambda/).
-* **Amazon Managed Elastic search**: Amazon Managed Elasticsearch is a managed service that makes it easy to deploy, operate, and scale Elasticsearch in the cloud. It is designed to make the Elasticsearch experience easier for developers, read more about it [here](https://aws.amazon.com/elasticsearch-service/).
-* **Amazon Kinesis Data Firehose**: Amazon Kinesis Data Firehose is a fully managed service that makes it easy to stream data to Amazon S3, Amazon Redshift, or Amazon Elasticsearch Service. It is designed to make the data streaming experience easier for developers, read more about it [here](https://aws.amazon.com/kinesis/data-firehose/).
-
-## High level Architecture
-
-Here is the architecture of the solution proposed in this article:
+The following diagram shows the architecture of our solution.
 
 ![architecture](images/arch.svg)
 
-The above architecture uses various log aggregation tools (like log agents, log routers, and lambda extensions) to collect logs from various compute platforms and deliver them to the Kinesis Data Firehose. The Kinesis Data Firehose streams the logs to Elasticsearch. To scale this architecture better each of these compute platforms will stream the logs to a different Kinesis Data Firehose stream which  will get added to a separate elastic search index, rotated every 24 hours.
+The architecture uses various log aggregation tools such as log agents, log routers, and Lambda extensions to collect logs from multiple compute platforms and deliver them to Kinesis Data Firehose. Kinesis Data Firehose streams the logs to Amazon OpenSearch Service. Log records that fail to get persisted in Amazon OpenSearch service will get written to AWS S3. To scale this architecture, each of these compute platforms streams the logs to a different Firehose delivery stream, added as a separate index, and rotated every 24 hours.
 
-Let's see in detail how the solution is implemented on each of these compute platforms.
+The following sections demonstrate how the solution is implemented on each of these computing platforms.
 
 ### Amazon EC2
 
-`Amazon Kinesis Agent` is used to collect and stream logs to kinesis data firehose from EC2 instances. Amazon Kinesis agent is a standalone Java software application that offers an easy way to collect and send data to Kinesis Data Firehose. The agent continuously monitors a set of files and sends new data to your Kinesis Data Firehose delivery stream.
+The Kinesis agent collects and streams logs from the applications running on EC2 instances to Kinesis Data Firehose. The agent is a standalone Java software application that offers an easy way to collect and send data to Kinesis Data Firehose. The agent continuously monitors files and sends logs to the Firehose delivery stream.
 
 ![ec2](images/ec2.svg)
 
-CDK script provided part of this article deploys a simple PHP application that generates logs under `/etc/httpd/logs` directory inside the EC2 instance. The Kinesis agent is configured via `/etc/aws-kinesis/agent.json` to watch both `access_logs` and `error_logs`, stream them periodically to Kinesis Data Firehose (`ec2-logs-delivery-stream`).
+The AWS CDK script provided as part of this solution deploys a simple PHP application that generates logs under the  `/etc/httpd/logs` directory on the EC2 instance. The Kinesis agent is configured via `/etc/aws-kinesis/agent.json` to collect data from `access_logs` and `error_logs`, stream them periodically to Kinesis Data Firehose (`ec2-logs-delivery-stream`).
 
-Since Elastic search expects data in JSON format, we introduce a firehose data transformer (Lambda function) that converts the log data to JSON format before writing it to Elastic search. Here is a sample input and output for the data transformer:
+Because Amazon OpenSearch Service expects data in JSON format, you can add a call to a Lambda function to transform the log data to JSON format within Kinesis Data Firehose before streaming to Amazon OpenSearch Service. The following is a sample input for the data transformer:
 
 **Input:**
 
@@ -50,49 +47,49 @@ Since Elastic search expects data in JSON format, we introduce a firehose data t
 46.99.153.40 - - [29/Jul/2021:15:32:33 +0000] "GET / HTTP/1.1" 200 173 "-" "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36"
 ```
 
+The following is our output:
+
 ```json
 {
     "logs" : "46.99.153.40 - - [29/Jul/2021:15:32:33 +0000] \"GET / HTTP/1.1\" 200 173 \"-\" \"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36\"",
 }
 ```
 
-> Notes: Lambda function can be enhanced to extract out timestamp, HTTP, browser information from the log data and store them as seperate attributes in the JSON document.
+> Notes: We can enhance the Lambda function to extract the timestamp, HTTP, and browser information from the log data, and store them as separate attributes in the JSON document.
 
 ### Amazon ECS
 
-In case of Amazon ECS we use `FireLens` to send logs directly to Kinesis Data Firehose. FireLens is a container log router for Amazon ECS and AWS Fargate that gives you extensibility to use the breadth of services at AWS or partner solutions for log analytics and storage.
+In the case of Amazon ECS, we use FireLens to send logs directly to Kinesis Data Firehose. FireLens is a container log router for Amazon ECS and AWS Fargate that gives you the extensibility to use the breadth of services at AWS or partner solutions for log analytics and storage.
 
 ![ecs](images/ecs.svg)
 
-Above architecture hosts firelens as a side car which collect logs from the main container running `httpd` application and send them to Kinesis Data Firehose.
+The architecture hosts FireLens as a sidecar, which collects logs from the main container running an httpd application and sends them to Kinesis Data Firehose and streams to Amazon OpenSearch Service. The AWS CDK script provided as part of this solution deploys a httpd container hosted behind an Application Load Balancer. The `httpd` logs are pushed to Kinesis Data Firehose (`ecs-logs-delivery-stream`) through the FireLens log router.
 
 ### Amazon EKS
 
-When the recent annoucement of Fluent Bit for Amazon EKS, we no longer need to run a sidecar to route container logs from EKS pods running on AWS Fargate. With the new built-in logging support, you select where you want to send your data and logs are routed to a destination of your choice. Under the hood, EKS on Fargate uses a version of Fluent Bit for AWS, an upstream conformant distribution of Fluent Bit managed by AWS.
+With the recent announcement of Fluent Bit support for Amazon EKS, you no longer need to run a sidecar to route container logs from Amazon EKS pods running on Fargate. With the new built-in logging support, you can select a destination of your choice to send the records to. Amazon EKS on Fargate uses a version of Fluent Bit for AWS, an upstream conformant distribution of Fluent Bit managed by AWS.
 
 ![eks](images/eks.svg)
 
-CDK script provided part of this article deploys `nginx` container hosted behind an internal application loadbalancer. `nginx` container logs gets pushed to Kinesis Data Firehose (`eks-logs-delivery-stream`) through Fluent Bit plugin.
+The AWS CDK script provided as part of this solution deploys an `NGINX` container hosted behind an internal Application Load Balancer. The `NGINX` container logs are pushed to Kinesis Data Firehose (`eks-logs-delivery-stream`) through the Fluent Bit plugin.
 
 ### Amazon Lambda
 
-For Lambda functions we will use `Amazon Lambda extension` to send logs directly to Kinesis Data Firehose. We `DENY` the logs from being written to the AWS Cloudwatch service.
+For Lambda functions, you can send logs directly to Kinesis Data Firehose using the Lambda extension. You can deny the records being written to Amazon CloudWatch.
 
 ![lambda](images/lambda.svg)
 
-Once deployed the overall flow looks like below:
+After deployment, the workflow is as follows:
+1. On startup, the extension subscribes to receive logs for the platform and function events. A local HTTP server is started inside the external extension, which receives the logs.
+2. The extension buffers the log events in a synchronized queue and writes them to Kinesis Data Firehose via PUT records.
+3. The logs are sent to downstream systems.
+4. The logs are sent to Amazon OpenSearch Service.
 
-* On start-up, the extension subscribes to receive logs for Platform and Function events.
-* A local HTTP server is started inside the external extension which receives the logs.
-* The extension also takes care of buffering the recieved log events in a synchronized queue and writing it to AWS Kinesis Firehose via direct PUT records.
+The Firehose delivery stream name gets specified as an environment variable (`AWS_KINESIS_STREAM_NAME`).
 
-> Note: Firehose stream name gets specified as an environment variable (AWS_KINESIS_STREAM_NAME).
+For this solution, because we’re only focusing on collecting the run logs of the Lambda function, the data transformer of the Kinesis Data Firehose delivery stream filters out the records of type `function ("type":"function")` before sending it to Amazon OpenSearch Service.
 
-Since we are interested in only capturing the execution logs of the lambda function, the data transformer will filter out the logs of type `function` before saving it to Elasticsearch.
-
-Here is a sample input and output for the data transformer:
-
-**Input**
+The following is a sample input for the data transformer:
 
 ```json
 [
@@ -166,50 +163,52 @@ Here is a sample input and output for the data transformer:
 }
 ```
 
-## Build and Deployment
+## Prerequisites
 
-### Assumptions
+To implement this solution, you need the following prerequisites:
 
 * AWS CLI - AWS Command-Line Interface (CLI) is a unified tool to manage your AWS services. You can read more about it [here](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html)
 * AWS CDK should be installed in the local laptop, you can read more about it [here](https://docs.aws.amazon.com/cli/latest/userguide/installing.html)
 * Git is installed and configured on your machine, you can read more about it [here](https://git-scm.com/downloads)
 * AWS Lambda extension for Kinesis Data Firehose is prebuilt and packaged part of this article, you can read more about it [here](https://github.com/aws-samples/aws-lambda-extensions/tree/main/kinesisfirehose-logs-extension-demo)
 
-### Build
+## Build the code
 
-* Check out the CDK code by running the following command:
+* Check out the AWS CDK code by running the following command:
 
 ```bash
 mkdir unified-logs && cd unified-logs
-git clone https://github.com/hariohmprasath/unified-log-aggregation-and-analytics.git .
+git clone https://github.com/aws-samples/unified-log-aggregation-and-analytics .
 ```
 
 * Build the lambda extension by running the following command:
 
 ```bash
-cd lib/computes/lambda/extensions/extensions
+cd lib/computes/lambda/extensions
 chmod +x extension.sh
 ./extension.sh
-cd ../../../../../
+cd ../../../../
 ```
 
-* Build the CDK code by running the following command:
+* Make sure to replace default AWS region specified under the value of `firehose.endpoint` attribute inside `lib/computes/ec2/ec2-startup.sh`
+
+* Build the code by running the following command:
 
 ```bash
 yarn install && npm run build
 ```
 
-### Deployment
+## Deploy the code
 
-* If you are running CDK for the first time, run the following command to bootstrap the CDK environment.
+* If you’re running AWS CDK for the first time, run the following command to bootstrap the AWS CDK environment (provide your AWS account ID and AWS Region):
 
 ```bash
 cdk bootstrap \
     --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess \
-    aws://<AWS Account Id>/<AWS_REGION>
+    aws://775492342640/us-east-2
 ```
 
-> Note: Replace your AWS Account Id and AWS region in the command above. Bootstrap CDK (**ONLY ONCE**, if you have already done this you can skip this part)
+> Note: You only need to bootstrap the AWS CDK one time (skip this step if you have already done this).
 
 * Run the following command to deploy the code:
 
@@ -238,27 +237,22 @@ Stack ARN:
 arn:aws:cloudformation:us-east-1:xxxx:stack/CdkUnifiedLogStack/6d53ef40-efd2-11eb-9a9d-1230a5204572
 ```
 
-> Note: CDK will take care of building the required infrastructure, deploying the sample application and collecting logs from different sources to Elastic search.
+> Note: AWS CDK takes care of building the required infrastructure, deploying the sample application, and collecting logs from different sources to Amazon OpenSearch Service.
 
-Here are few key info about the built stack:
+The following is some of the key information about the stack:
 
-| Parameter  | Description |
-| ------------- | ------------- |
-| ec2ipaddress  | Public IP address of the EC2 instance, deployed with sample PHP application |
-| ecsloadbalancerurl | URL of the ECS Load Balancer, deployed with `httpd` application |
-| eksclusterClusterNameCE21A0DB | EKS cluster name, deployed with `nginx` application |
-| samplelambdafunction | Sample Lambda function using `lambda extension` to send logs to kinesis data firehose |
-| elasticdomainarn | ARN of the Elasticsearch domain |
+* **ec2ipaddress** – The public IP address of the EC2 instance, deployed with the sample PHP application
+* **ecsloadbalancerurl** – The URL of the Amazon ECS Load Balancer, deployed with the httpd application
+* **eksclusterClusterNameCE21A0DB** – The Amazon EKS cluster name, deployed with the NGINX application
+* **samplelambdafunction** – The sample Lambda function using the Lambda extension to send logs to Kinesis Data Firehose
+* **opensearch-domain-arn**– The ARN of the Amazon OpenSearch Service domain
 
-## Visualizing logs
 
-### Generating logs
+## Generate logs
 
 To visualize the logs, we need to generate some sample logs. Here is how we can generate them for each of the services:
 
-* **AWS Lambda** - Run the following command couple of times to generate logs:
-
-You can invoke the Lambda function using the following CLI command
+1. To generate Lambda logs, invoke the function using the following AWS CLI command (run it a few times):
 
 ```bash
 aws lambda invoke \
@@ -280,7 +274,7 @@ The function should return ```"StatusCode": 200```, with the below output
 }
 ```
 
-* **AWS EC2** - Run the following command couple of times to generate logs:
+2. Run the following command a couple of times to generate Amazon EC2 logs:
 
 ```bash
 curl http://ec2ipaddress:80
@@ -288,7 +282,7 @@ curl http://ec2ipaddress:80
 
 >Note: Make sure to replace `ec2ipaddress` with the public IP address of the EC2 instance
 
-* **AWS ECS**  - Run the following command couple of times to generate logs:
+3. Run the following command a couple of times to generate Amazon ECS logs:
 
 ```bash
 curl http://ecsloadbalancerurl:80
@@ -296,23 +290,26 @@ curl http://ecsloadbalancerurl:80
 
 >Note: Make sure to replace `ecsloadbalancerurl` with the public ARN of the AWS Application Load Balancer
 
-* **AWS EKS** - We have deployed the `nginx` application with internal load balancer, so the load balancer will hit the health check point of the application, which is sufficient to generate the access logs.
+We deployed the NGINX application with an internal load balancer, so the load balancer hits the health checkpoint of the application, which is sufficient to generate the Amazon EKS access logs.
 
-### Visualization
+## Visualize the logs
 
-* Login in to AWS console and navigate to the [Elasticsearch service](https://console.aws.amazon.com/es/home).
-* Click on the hyperlink provided for `Kibana` URL. Visit this [page](https://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-kibana.html) to configure the access to the Kibana console.
-* To create separate index patterns for every compute log, click on `Discover` menu under `Kibana` section in the side bar and start creating a new index pattern for each of these compute logs.
+To visualize the logs, complete the following steps:
 
-> Note: We can see separate indexes for each compute logs partitioned by date, like below:
+1. On the Amazon OpenSearch Service console, choose the hyperlink provided for the OpenSearch Dashboard URL.
+2. [2.   Configure access to the OpenSearch Dashboard.](https://docs.aws.amazon.com/opensearch-service/latest/developerguide/dashboards.html)
+3. Under **OpenSearch Dashboard**, on the **Discover** menu, start creating a new index pattern for each compute log.
+
+
+> Note: We can see separate indexes for each compute log partitioned by date, as in the following screenshot.
 
 ![all-index](images/all-index.png)
 
-Here is how we can create index patterns for ec2 logs:
+The following screenshot shows the process to create index patterns for Amazon EC2 logs.
 
 ![ecs-logs-index](images/ecs-logs-index.png)
 
-* Once we create all the index pattern, we can start analyzing the logs using `Discover` menu under `Kibana` section in the side bar. This provides a single searchable and unified interface for all the logs that different applications have generated deployed in various compute log platforms. We can switch between different logs using `Change index pattern` submenu.
+After you create the index pattern, we can start analyzing the logs using the Discover menu under OpenSearch Dashboard in the navigation pane. This tool provides a single searchable and unified interface for all the records with various compute platforms. We can switch between different logs using the Change index pattern submenu.
 
 ![unified](images/unified.png)
 
@@ -328,9 +325,12 @@ cdk destroy
 
 ## Conclusion
 
-We have shown how we unify and centralize logs across different compute platforms using Kinesis data firehose and ElasticSearch. This approach allows customers to analyze logs quicker and understand the root cause of failures, all using a single platform rather than using different platforms for different services.
+In this post, we showed how to unify and centralize logs across different compute platforms using Kinesis Data Firehose and Amazon OpenSearch Service. This approach allows you to analyze logs quickly and the root cause of failures, using a single platform rather than different platforms for different services.
+If you have feedback about this post, submit your comments in the comments section.
 
 ## Resources
+
+For more information, see the following resources:
 
 * [CDK with EKS on Fargate](https://github.com/aws-samples/cdk-eks-fargate)
 * [Ingest streaming data into Amazon Elasticsearch Service within the privacy of your VPC with Amazon Kinesis Data Firehose](https://aws.amazon.com/blogs/big-data/ingest-streaming-data-into-amazon-elasticsearch-service-within-the-privacy-of-your-vpc-with-amazon-kinesis-data-firehose/)

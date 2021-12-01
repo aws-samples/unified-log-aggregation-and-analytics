@@ -17,8 +17,8 @@ export class EksLogger extends cdk.NestedStack {
   constructor(scope: cdk.Construct, id: string, props: LoggingProp) {
 
     super(scope, id, props);
-    
-    CreateKirehoseDataStream(props.stack, 'eks-fire-hose-delivery-stream', 'eks', props.es, props.failureBucket);
+
+    CreateKirehoseDataStream(props.stack, 'eks-fire-hose-delivery-stream', 'eks', props.os, props.failureBucket);
 
     // EKS Cluster master role
     const masterRole = new iam.Role(props.stack, 'cluster-master-role', {
@@ -26,9 +26,9 @@ export class EksLogger extends cdk.NestedStack {
     });
 
     // Create a EKS cluster with Fargate profile.
-    this.cluster = new eks.FargateCluster(props.stack, 'eks-cluster', {          
+    this.cluster = new eks.FargateCluster(props.stack, 'eks-cluster', {
       version: eks.KubernetesVersion.V1_18,
-      mastersRole: masterRole,      
+      mastersRole: masterRole,
       outputClusterName: true,
       endpointAccess: eks.EndpointAccess.PUBLIC,
       vpc: props.vpc,
@@ -45,7 +45,7 @@ export class EksLogger extends cdk.NestedStack {
     const cdk8sApp = new cdk8s.App();
     const chart = new cdk8s.Chart(cdk8sApp, 'eks-chart');
 
-    const k8sAppNameSpace = 'nginx';    
+    const k8sAppNameSpace = 'nginx';
     const k8sAppServiceAccount = 'sa-nginx';
     const conditions = new cdk.CfnJson(props.stack, 'ConditionJson', {
       value: {
@@ -61,7 +61,7 @@ export class EksLogger extends cdk.NestedStack {
     ).withConditions({
       StringEquals: conditions,
     });
-    this.iamRoleForK8sSa = new iam.Role(props.stack, 'nginx-app-sa-role', {      
+    this.iamRoleForK8sSa = new iam.Role(props.stack, 'nginx-app-sa-role', {
       assumedBy: iamPrinciple,
     });
 
@@ -105,7 +105,7 @@ export class EksLogger extends cdk.NestedStack {
         new iam.PolicyStatement({
           effect: iam.Effect.ALLOW,
           actions: [
-            'firehose:*',            
+            'firehose:*',
           ],
           resources: ['*'],
         }),
@@ -118,6 +118,6 @@ export class EksLogger extends cdk.NestedStack {
       new EksFargateLogging(chart, 'eks-fargate-logging-chart', props.region),
     );
 
-    loggingChart.node.addDependency(customerAppFargateProfile);    
+    loggingChart.node.addDependency(customerAppFargateProfile);
   }
 }

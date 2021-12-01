@@ -11,7 +11,7 @@ export class ECSLogger extends cdk.NestedStack {
     super(scope, id, props);
 
     // Kinesis stream to capture ECS logs
-    CreateKirehoseDataStream(props.stack, 'ecs-fire-hose-delivery-stream', 'ecs', props.es, props.failureBucket);
+    CreateKirehoseDataStream(props.stack, 'ecs-fire-hose-delivery-stream', 'ecs', props.os, props.failureBucket);
 
     // Create ECS Cluster
     const cluster = new ecs.Cluster(props.stack, 'unified-logger-ecs-cluster', { vpc: props.vpc });

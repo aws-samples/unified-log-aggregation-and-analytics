@@ -25,17 +25,47 @@ export class Ec2Logger extends cdk.NestedStack {
     securityGroup.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(80), 'Port 80 for inbound traffic from IPv4');
     securityGroup.addIngressRule(ec2.Peer.anyIpv6(), ec2.Port.tcp(80), 'Port 80 for inbound traffic from IPv6');
 
+    const lambdaRole = new iam.Role(props.stack, 'ecs-lambda-role', {
+      assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
+      managedPolicies: [
+        new iam.ManagedPolicy(props.stack, 'ec2LambdaFirehoseWriteAccess', {
+          statements: [
+            new iam.PolicyStatement({
+              effect: iam.Effect.ALLOW,
+              actions: ['firehose:*'],
+              resources: ['*'],
+            }),
+          ],
+        }),
+        new iam.ManagedPolicy(props.stack, 'ec2LambdaCloudWatchAccess', {
+          statements: [
+            new iam.PolicyStatement({
+              effect: iam.Effect.ALLOW, // allow sending logs to CloudWatch
+              actions: [
+                'logs:CreateLogGroup',
+                'logs:CreateLogStream',
+                'logs:PutLogEvents'
+              ],
+              resources: ['arn:aws:logs:*:*:*'],
+            }),
+          ],
+        }),
+        iam.ManagedPolicy.fromManagedPolicyArn(props.stack, 'ec2LambdaBasic', 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole')
+      ],
+    });
+
     // Firehose record transformer for Ec2 plain text logs
     const firehoseTransformer =  new lambda.Function(props.stack, 'Ec2-transformer-function', {
       runtime: lambda.Runtime.NODEJS_14_X,
       handler: 'index.handler',
       code: lambda.Code.fromAsset(`${path.resolve(__dirname)}/ec2/lambda`),
       memorySize: 1024,
-      timeout: Duration.minutes(1),
+      timeout: Duration.minutes(2),
+      role: lambdaRole
     });
 
-    // Kinesis hirehose to capture Ec2 plain text logs
-    CreateKirehoseDataStream(props.stack, 'ec2-logs-delivery-stream', 'ec2', props.es, props.failureBucket, firehoseTransformer);
+    // Kinesis firehose to capture Ec2 plain text logs
+    CreateKirehoseDataStream(props.stack, 'ec2-logs-delivery-stream', 'ec2', props.os, props.failureBucket, firehoseTransformer);
 
     // Create Ec2 instance
     const ec2Instance = new ec2.Instance(props.stack, 'ec2-instance', {
@@ -43,12 +73,12 @@ export class Ec2Logger extends cdk.NestedStack {
       vpc: props.vpc,
       vpcSubnets: {
         subnetType: ec2.SubnetType.PUBLIC,
-      },      
+      },
       machineImage: ec2.MachineImage.latestAmazonLinux({
         generation: ec2.AmazonLinuxGeneration.AMAZON_LINUX_2,
         edition: ec2.AmazonLinuxEdition.STANDARD,
       }),
-      securityGroup: securityGroup,      
+      securityGroup: securityGroup,
       role: new iam.Role(props.stack, 'ec2-role', {
         assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
         managedPolicies: [
@@ -75,7 +105,7 @@ export class Ec2Logger extends cdk.NestedStack {
     });
 
     // Startup script to setup and start kinesis agent
-    ec2Instance.addUserData(readFileSync('./lib/computes/ec2/ec2-startup.sh', 'utf8'));    
+    ec2Instance.addUserData(readFileSync('./lib/computes/ec2/ec2-startup.sh', 'utf8'));
 
     // IP Address
     new cdk.CfnOutput(props.stack, 'ec2-ip-address', {

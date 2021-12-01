@@ -11,7 +11,7 @@ export class LambdaLogger extends cdk.NestedStack {
   constructor(scope: cdk.Construct, id: string, props: LoggingProp) {
 
     super(scope, id, props);
-    
+
     // Firehose record transformer for lambda function logs
     const firehoseTransformer =  new lambda.Function(props.stack, 'lambda-serverless-transformer-function', {
       runtime: lambda.Runtime.NODEJS_14_X,
@@ -21,8 +21,8 @@ export class LambdaLogger extends cdk.NestedStack {
       timeout: Duration.minutes(1),
     });
 
-    // Kinesis hirehose to capture lambda function execution logs
-    CreateKirehoseDataStream(props.stack, 'lambda-logs-delivery-stream', 'lambda', props.es, props.failureBucket, 
+    // Kinesis firehose to capture lambda function execution logs
+    CreateKirehoseDataStream(props.stack, 'lambda-logs-delivery-stream', 'lambda', props.os, props.failureBucket,
                             firehoseTransformer);
 
     // IAM Role
@@ -53,7 +53,7 @@ export class LambdaLogger extends cdk.NestedStack {
         }),
         iam.ManagedPolicy.fromManagedPolicyArn(props.stack, 'lambdabasic', 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole')
       ],
-    });  
+    });
 
     // Extension to directly send logs to kinesis firehose
     const firehoseExtensionLayer = new lambda.LayerVersion(props.stack, 'firehose-layer', {
@@ -73,7 +73,7 @@ export class LambdaLogger extends cdk.NestedStack {
       code: lambda.Code.fromAsset(`${path.resolve(__dirname)}/lambda/handler`),
       memorySize: 1024,
       timeout: Duration.minutes(1),
-      layers: [firehoseExtensionLayer],      
+      layers: [firehoseExtensionLayer],
       role: lambdaRole,
       environment: {
         'AWS_KINESIS_STREAM_NAME': 'lambda-logs-delivery-stream'
