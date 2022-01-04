@@ -31,7 +31,7 @@ export class ECSLogger extends cdk.NestedStack {
 
     // The docker container including the image to use
     const container = taskDefinition.addContainer('container', {
-      image: ecs.ContainerImage.fromRegistry('httpd'),
+      image: ecs.ContainerImage.fromRegistry('public.ecr.aws/docker/library/httpd:latest'),
       memoryLimitMiB: 512,
       logging: ecs.LogDrivers.firelens({
         options: {
