@@ -27,7 +27,7 @@ export class EksLogger extends cdk.NestedStack {
 
     // Create a EKS cluster with Fargate profile.
     this.cluster = new eks.FargateCluster(props.stack, 'eks-cluster', {
-      version: eks.KubernetesVersion.V1_18,
+      version: eks.KubernetesVersion.V1_21,
       mastersRole: masterRole,
       outputClusterName: true,
       endpointAccess: eks.EndpointAccess.PUBLIC,
