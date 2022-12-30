@@ -1935,14 +1935,14 @@ cdk8s-plus-17@1.0.0-beta.36:
   dependencies:
     minimatch "^3.0.4"
 
-cdk8s@1.0.0-beta.26:
-  version "1.0.0-beta.26"
-  resolved "https://registry.yarnpkg.com/cdk8s/-/cdk8s-1.0.0-beta.26.tgz#957f7e1e6bba14e90918d2dd05908bda3b3721e2"
-  integrity sha512-CnrIxcQylFVWgtNoTc4wInqi+MU143WGm8ZY1qotG05byF7QsgIFICjIUIH7osNRkGXP/zQaEL8sxCZne1rfqQ==
+cdk8s@1.9.3:
+  version "1.9.3"
+  resolved "https://registry.yarnpkg.com/cdk8s/-/cdk8s-1.9.3.tgz#d7254b65b674696b406f3de2a510cdd15c3ad945"
+  integrity sha512-W3RHYgsCBvSEqzUSHh1ejGvJWipAaijzVbrw8eTQVckMBUTaOJ4ni0q+aN7A/i4Dog7o7SaM7OpSwCD9BAUvHw==
   dependencies:
-    fast-json-patch "^2.2.1"
-    follow-redirects "^1.14.1"
-    yaml "2.0.0-5"
+    fast-json-patch "^3.1.1"
+    follow-redirects "^1.15.2"
+    yaml "2.0.0-7"
 
 chalk@^2.0.0:
   version "2.4.2"
@@ -2539,22 +2539,15 @@ extglob@^2.0.4:
     snapdragon "^0.8.1"
     to-regex "^3.0.1"
 
-fast-deep-equal@^2.0.1:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/fast-deep-equal/-/fast-deep-equal-2.0.1.tgz#7b05218ddf9667bf7f370bf7fdb2cb15fdd0aa49"
-  integrity sha1-ewUhjd+WZ79/Nwv3/bLLFf3Qqkk=
-
 fast-deep-equal@^3.1.1, fast-deep-equal@^3.1.3:
   version "3.1.3"
   resolved "https://registry.yarnpkg.com/fast-deep-equal/-/fast-deep-equal-3.1.3.tgz#3a7d56b559d6cbc3eb512325244e619a65c6c525"
   integrity sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==
 
-fast-json-patch@^2.2.1:
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/fast-json-patch/-/fast-json-patch-2.2.1.tgz#18150d36c9ab65c7209e7d4eb113f4f8eaabe6d9"
-  integrity sha512-4j5uBaTnsYAV5ebkidvxiLUYOwjQ+JSFljeqfTxCrH9bDmlCQaOJFS84oDJ2rAXZq2yskmk3ORfoP9DCwqFNig==
-  dependencies:
-    fast-deep-equal "^2.0.1"
+fast-json-patch@^3.1.1:
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/fast-json-patch/-/fast-json-patch-3.1.1.tgz#85064ea1b1ebf97a3f7ad01e23f9337e72c66947"
+  integrity sha512-vf6IHUX2SBcA+5/+4883dsIjpBTqmfBjmYiWK1savxQmFk4JfBMLa7ynTYOs1Rolp/T1betJxHiGD3g1Mn8lUQ==
 
 fast-json-stable-stringify@2.x, fast-json-stable-stringify@^2.0.0:
   version "2.1.0"
@@ -2603,10 +2596,10 @@ find-up@^4.0.0, find-up@^4.1.0:
     locate-path "^5.0.0"
     path-exists "^4.0.0"
 
-follow-redirects@^1.14.1:
-  version "1.14.8"
-  resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.14.8.tgz#016996fb9a11a100566398b1c6839337d7bfa8fc"
-  integrity sha512-1x0S9UVJHsQprFcEC/qnNzBLcIxsjAV905f/UkQxbclCsoTWlacCNOpQa/anodLl2uaEKFhfWOvM2Qg77+15zA==
+follow-redirects@^1.15.2:
+  version "1.15.2"
+  resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.15.2.tgz#b460864144ba63f2681096f274c4e57026da2c13"
+  integrity sha512-VQLG33o04KaQ8uYi2tVNbdrWp1QWxNNea+nmIB4EVM28v0hmP17z7aG1+wAkNzVq4KeXTq3221ye5qTJP91JwA==
 
 for-in@^1.0.2:
   version "1.0.2"
@@ -5255,10 +5248,10 @@ yaml@1.10.2:
   resolved "https://registry.yarnpkg.com/yaml/-/yaml-1.10.2.tgz#2301c5ffbf12b467de8da2333a459e29e7920e4b"
   integrity sha512-r3vXyErRCYJ7wg28yvBY5VSoAF8ZvlcW9/BwUzEtUsjvX/DKs24dIkuwjtuprwJJHsbyUbLApepYTR1BN4uHrg==
 
-yaml@2.0.0-5:
-  version "2.0.0-5"
-  resolved "https://registry.yarnpkg.com/yaml/-/yaml-2.0.0-5.tgz#00906046dc119427b2b4f7cf9041d34682d1480b"
-  integrity sha512-qH5L5eqW8cyv/N1U6rkK/O0M7kOK3BSo48d05Ptm03ITNsVFwg6TQ47wR72Db/ULWH5RfNJv+CqnG17Pyn8eqQ==
+yaml@2.0.0-7:
+  version "2.0.0-7"
+  resolved "https://registry.yarnpkg.com/yaml/-/yaml-2.0.0-7.tgz#9799d9d85dfc8f01e4cc425e18e09215364beef1"
+  integrity sha512-RbI2Tm3hl9AoHY4wWyWvGvJfFIbHOzuzaxum6ez1A0vve+uXgNor03Wys4t+2sgjJSVSe+B2xerd1/dnvqHlOA==
 
 yargs-parser@20.x, yargs-parser@^20.2.2:
   version "20.2.9"
