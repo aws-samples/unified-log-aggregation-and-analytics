@@ -24,7 +24,7 @@
     "@aws-cdk/aws-lambda-nodejs": "1.134.0",
     "@types/jest": "^26.0.10",
     "@types/node": "10.17.27",
-    "cdk8s": "1.0.0-beta.26",
+    "cdk8s": "1.9.3",
     "cdk8s-plus-17": "1.0.0-beta.36",
     "jest": "^26.4.2",
     "ts-jest": "^26.2.0",
